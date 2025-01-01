@@ -2,9 +2,13 @@ name: ci - api
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "api/**"
   pull_request:
+    branches:
+      - main
     paths:
       - "api/**"
 
