@@ -1,0 +1,28 @@
+name: ci - workflows
+
+on:
+  push:
+    paths:
+      - "github/workflows/**"
+  pull_request:
+    paths:
+      - "github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: validate yaml
+        uses: redhat-actions/yamllint@v2
+        with:
+          files: .github/workflows/*.yml
+
+      - name: test workflow changes
+        run: |
+          echo "workflows have been updated"
