@@ -9,8 +9,3 @@ variable "cluster_name" {
   type        = string
   default     = "qrcode-cluster"
 }
-
-variable "subnet_ids" {
-  description = "list of subnet ids for eks"
-  type        = list(string)
-}
