@@ -41,7 +41,7 @@ jobs:
         run: |
           terraform init
           terraform validate
-          terraform plan -out=tfplan
+          terraform plan -lock=false -out=tfplan
           terraform apply -auto-approve tfplan
 
       - name: setup kubectl
