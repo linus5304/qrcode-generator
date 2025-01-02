@@ -39,7 +39,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
           TF_VAR_cluster_name: ${{ secrets.CLUSTER_NAME }}
-          TF_VAR_ecr_registry: ${{ secrets.ECR_REGISTRY }}
+          TF_VAR_ecr_registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           TF_VAR_ecr_repository_api: ${{ secrets.ECR_API_REPOSITORY }}
           TF_VAR_ecr_repository_frontend: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
           TF_VAR_image_tag: ${{ github.sha }} # Example using commit SHA
