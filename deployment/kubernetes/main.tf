@@ -1,11 +1,11 @@
 provider "kubernetes" {
-  host                   = aws_eks_cluster.main.endpoint
-  cluster_ca_certificate = base64decode(aws_eks_cluster.main.certificate_authority[0].data)
+  host                   = module.eks_al2023.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks_al2023.cluster_certificate_authority_data)
   token                  = data.aws_eks_cluster_auth.main.token
 }
 
 data "aws_eks_cluster_auth" "main" {
-  name = aws_eks_cluster.main.name
+  name = module.eks_al2023.cluster_name
 }
 
 resource "kubernetes_deployment" "api" {
@@ -44,7 +44,10 @@ resource "kubernetes_deployment" "api" {
       }
     }
   }
-  depends_on = [aws_eks_cluster.main]
+
+  depends_on = [
+    module.eks_al2023
+  ]
 }
 
 resource "kubernetes_service" "api" {
@@ -68,7 +71,10 @@ resource "kubernetes_service" "api" {
 
     type = "LoadBalancer"
   }
-  depends_on = [kubernetes_deployment.api]
+
+  depends_on = [
+    kubernetes_deployment.api
+  ]
 }
 
 resource "kubernetes_deployment" "frontend" {
@@ -107,7 +113,10 @@ resource "kubernetes_deployment" "frontend" {
       }
     }
   }
-  depends_on = [aws_eks_cluster.main]
+
+  depends_on = [
+    module.eks_al2023
+  ]
 }
 
 resource "kubernetes_service" "frontend" {
@@ -131,6 +140,7 @@ resource "kubernetes_service" "frontend" {
 
     type = "LoadBalancer"
   }
+
   depends_on = [
     kubernetes_deployment.frontend
   ]

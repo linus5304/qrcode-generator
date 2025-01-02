@@ -33,49 +33,37 @@ jobs:
         run: aws sts get-caller-identity
 
       - name: terraform apply
-        working-directory: ./infrastructure
+        working-directory: ./deployment/infrastructure
         env:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
           TF_VAR_cluster_name: ${{ secrets.CLUSTER_NAME }}
           TF_VAR_ecr_registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           TF_VAR_ecr_repository_api: ${{ secrets.ECR_API_REPOSITORY }}
           TF_VAR_ecr_repository_frontend: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
-          TF_VAR_image_tag: ${{ github.sha }} # Example using commit SHA
+          TF_VAR_image_tag: ${{ github.sha }}
+          TF_VAR_tags: '{"Terraform":"true","Environment":"production"}'
         run: |
           terraform init
           terraform validate
           terraform plan -lock=false -out=tfplan
           terraform apply -auto-approve -lock=false tfplan
 
-      - name: setup kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: "latest"
-
-      - name: update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
-
-      - name: deploy api to eks
+      - name: terraform apply k8s resources
+        working-directory: ./deployment/kubernetes
         env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          ECR_REPOSITORY: ${{ secrets.ECR_API_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-          K8S_DEPLOYMENT: ${{ secrets.K8S_API_DEPLOYMENT }}
-          K8S_CONTAINER: ${{ secrets.K8S_API_CONTAINER }}
+          TF_VAR_ecr_registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          TF_VAR_ecr_repository_api: ${{ secrets.ECR_API_REPOSITORY }}
+          TF_VAR_ecr_repository_frontend: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+          TF_VAR_image_tag: ${{ github.sha }}
         run: |
-          kubectl set image deployment/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-          kubectl rollout status deployment/${K8S_DEPLOYMENT}
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
 
-      - name: deploy front to eks
-        env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          ECR_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-          K8S_DEPLOYMENT: ${{ secrets.K8S_FRONTEND_DEPLOYMENT }}
-          K8S_CONTAINER: ${{ secrets.K8S_FRONTEND_CONTAINER }}
+      - name: verify api pods
         run: |
-          kubectl set image deployment/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-          kubectl rollout status deployment/${K8S_DEPLOYMENT}
+          kubectl get pods --selector=app=api --namespace=default
+
+      - name: verify frontend pods
+        run: |
+          kubectl get pods --selector=app=frontend --namespace=default

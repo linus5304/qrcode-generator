@@ -29,3 +29,8 @@ variable "image_tag" {
   description = "image tag"
   type        = string
 }
+
+variable "tags" {
+  description = "tags"
+  type        = map(string)
+}
