@@ -42,7 +42,7 @@ jobs:
           terraform init
           terraform validate
           terraform plan -lock=false -out=tfplan
-          terraform apply -auto-approve tfplan
+          terraform apply -auto-approve -lock=false tfplan
 
       - name: setup kubectl
         uses: azure/setup-kubectl@v4
