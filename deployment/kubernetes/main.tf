@@ -1,6 +1,18 @@
+data "terraform_remote_state" "infrastructure" {
+  backend = "s3"
+
+  config = {
+    bucket         = "qrcode-tf-state-1234"
+    key            = "terraform/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "qrcode-tf-state-lock"
+    encrypt        = true
+  }
+}
+
 provider "kubernetes" {
-  host                   = module.eks_al2023.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks_al2023.cluster_certificate_authority_data)
+  host                   = data.terraform_remote_state.infrastructure.outputs.cluster_endpoint
+  cluster_ca_certificate = base64decode(data.terraform_remote_state.infrastructure.outputs.cluster_certificate_authority_data)
   token                  = data.aws_eks_cluster_auth.main.token
 }
 
