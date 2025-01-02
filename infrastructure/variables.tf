@@ -9,3 +9,23 @@ variable "cluster_name" {
   type        = string
   default     = "qrcode-cluster"
 }
+
+variable "ecr_registry" {
+  description = "ecr registry"
+  type        = string
+}
+
+variable "ecr_repository_api" {
+  description = "ecr repo api"
+  type        = string
+}
+
+variable "ecr_repository_frontend" {
+  description = "ecr repo api"
+  type        = string
+}
+
+variable "image_tag" {
+  description = "image tag"
+  type        = string
+}
