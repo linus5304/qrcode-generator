@@ -58,15 +58,19 @@ jobs:
           ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           ECR_REPOSITORY: ${{ secrets.ECR_API_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
+          K8S_DEPLOYMENT: ${{ secrets.K8S_API_DEPLOYMENT }}
+          K8S_CONTAINER: ${{ secrets.K8S_API_CONTAINER }}
         run: |
-          kubectl set image deployment/${{ secrets.K8S_API_DEPLOYMENT }} ${{ secrets.K8S_API_CONTAINER }}=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          kubectl rollout status deployment/${{ secrets.K8S_API_DEPLOYMENT }}
+          kubectl set image deployment/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+          kubectl rollout status deployment/${K8S_DEPLOYMENT}
 
       - name: deploy front to eks
         env:
           ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           ECR_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
+          K8S_DEPLOYMENT: ${{ secrets.K8S_FRONTEND_DEPLOYMENT }}
+          K8S_CONTAINER: ${{ secrets.K8S_FRONTEND_CONTAINER }}
         run: |
-          kubectl set image deployment/${{ secrets.K8S_FRONTEND_DEPLOYMENT }} ${{ secrets.K8S_FRONTEND_CONTAINER }}=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          kubectl rollout status deployment/${{ secrets.K8S_FRONTEND_DEPLOYMENT }}
+          kubectl set image deployment/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+          kubectl rollout status deployment/${K8S_DEPLOYMENT}

@@ -39,3 +39,5 @@ The front-end code exits in the `front-end-nextjs` directory. You can run the fr
 The goal is to get hands-on with DevOps practices like Containerization, CICD and monitoring.
 
 Look at the capstone project for more detials.
+
+kubectl set image deployment/${K8S_DEPLOYMENT} ${K8S_CONTAINER}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
