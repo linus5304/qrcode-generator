@@ -30,5 +30,5 @@ output "eks_cluster_name" {
 
 output "eks_node_group_role_arn" {
   description = "The ARN of the EKS node group IAM role."
-  value       = module.eks_al2023.node_groups["example"].iam_role_arn
+  value       = module.eks_al2023.eks_managed_node_groups["example"].iam_role_arn
 }
