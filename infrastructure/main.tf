@@ -2,12 +2,23 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_eks_cluster" "main" {
-  name     = var.cluster_name
-  role_arn = aws_iam_role.eks_cluster_role.arn
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
 
-  vpc_config {
-    subnet_ids = var.subnet_ids
+  tags = {
+    Name = "main-vpc"
+  }
+}
+
+resource "aws_subnet" "public" {
+  count                   = 3
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
+  availability_zone       = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index)
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet-${count.index + 1}"
   }
 }
 
@@ -19,6 +30,7 @@ resource "aws_iam_role" "eks_cluster_role" {
 data "aws_iam_policy_document" "eks_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
+
     principals {
       type        = "Service"
       identifiers = ["eks.amazonaws.com"]
@@ -26,3 +38,15 @@ data "aws_iam_policy_document" "eks_assume_role_policy" {
   }
 }
 
+resource "aws_eks_cluster" "main" {
+  name     = var.cluster_name
+  role_arn = aws_iam_role.eks_cluster_role.arn
+
+  vpc_config {
+    subnet_ids = data.aws_subnets.eks.ids
+  }
+
+  depends_on = [
+    aws_iam_role.eks_cluster_role
+  ]
+}
